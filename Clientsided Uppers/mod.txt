@@ -1,6 +1,6 @@
 {
 	"blt_version" : 2,
-    "name" : "Client Sided Uppers",
+    "name" : "Clientsided Uppers",
     "description" : "",
     "author" : "powware",
     "contact" : "https://github.com/powware",
@@ -10,7 +10,7 @@
 	"updates" : [
         {
             "revision" : 1,
-            "identifier" : "ClientSidedUppers"
+            "identifier" : "ClientsidedUppers"
         }
     ],
 	"hooks" : [
