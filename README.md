@@ -1,10 +1,8 @@
 #### What it does:
 
 Clientsided Uppers aims at fixing the delay of deploying a FirstAidKit (FAK) as a client with high ping towards the host.
-During the time it takes to get an answer of the host to actually place down the FAK, Uppers does not apply, so it is possible to effectively go down on an Uppers-enabled FAK with the cooldown inactive. 
-With this mod FAKs which already were deployed clientsided, but havent been placed from the hostside, are made viable to trigger uppers for the deployee.
-
-This is annoying as you probably know, when you play death sentence and you are pushing it to the limit.
+During the time it takes to get an answer of the host to actually place down the FAK, Uppers does not apply, so it is possible to effectively go down on an Uppers-enabled FAK without being on cooldown.
+With this mod FAKs which were already deployed clientsided, but havent been placed from the hostside, are made viable to trigger uppers for the deployee.
 
 #### How the code works:
 
