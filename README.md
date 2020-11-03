@@ -6,8 +6,7 @@ With this mod FAKs which were already deployed clientsided, but havent been plac
 
 #### How the code works:
 
-As soon as you deploy a FAK before the request to place one gets sent to the host the information gets safed in a list of clientsided FAKs
-which when you go down and it doesnt find a fitting FAK in the regular list, it starts searching in the clientsided list and if it finds a fitting FAK it triggers the Uppers effect without actually using a FAK yet.
+As soon as you deploy a FAK before the request to place one gets sent to the host, the information gets saved in a list of clientsided FAKs. When you go down and it doesnt find a fitting FAK in the regular list, it starts searching in the clientsided list and if it finds a fitting FAK it triggers the Uppers effect without actually using a FAK yet.
 Then it adds this clientsided-used FAK into another list.
 This list is used when the FAK sync is received at a client, now the list is checked if it contains the FAK that the host has just added.
 This then means it has already been used and effectively shouldn't exist, so it instantly get a request to be synced as used.
