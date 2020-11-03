@@ -16,25 +16,34 @@ function ClientsidedUppers:Add(pos, rot, bits, min_distance, upgrade_lvl)
 end
 
 function ClientsidedUppers.Remove(pos)
+	local closest_dst = -1
+	local closest = 0
 	for i, fak in pairs(ClientsidedUppers._client_sided_faks) do
 		local dst = mvector3.distance(pos, fak.pos)
 
-		if dst <= 5 then
-			table.remove(ClientsidedUppers._client_sided_faks, i)
+		if dst < closest_dst or closest_dst == -1 then
+			closest_dst = dst
+			closest = i
 		end
+	end
+	if closest >= 1 then
+		table.remove(ClientsidedUppers._client_sided_faks, closest)
 	end
 end
 
 function ClientsidedUppers.GetFirstAidKit(pos)
+	local closest_dst = -1
+	local closest = nil
 	for i, fak in pairs(ClientsidedUppers._client_sided_faks) do
 		local dst = mvector3.distance(pos, fak.pos)
 
-		if dst <= fak.min_distance then
-			return fak
+		if dst <= fak.min_distance and dst < closest_dst then
+			closest_dst = dst
+			closest = fak
 		end
 	end
 
-	return nil
+	return closest
 end
 
 function ClientsidedUppers.AddUsed(fak)
@@ -42,25 +51,37 @@ function ClientsidedUppers.AddUsed(fak)
 end
 
 function ClientsidedUppers.RemoveUsed(pos)
+	local closest_dst = -1
+	local closest = 0
 	for i, fak in pairs(ClientsidedUppers._used_client_sided_faks) do
 		local dst = mvector3.distance(pos, fak.pos)
 
+		if dst < closest_dst or closest_dst == -1 then
+			closest_dst = dst
+			closest = i
+		end
 		if dst <= 5 then
 			table.remove(ClientsidedUppers._used_client_sided_faks, i)
 		end
 	end
+	if closest >= 1 then
+		table.remove(ClientsidedUppers._used_client_sided_faks, closest)
+	end
 end
 
 function ClientsidedUppers.GetUsedFirstAidKit(pos)
+	local closest_dst = -1
+	local closest = nil
 	for i, fak in pairs(ClientsidedUppers._used_client_sided_faks) do
 		local dst = mvector3.distance(pos, fak.pos)
 
-		if dst <= 5 then
-			return fak
+		if dst < closest_dst or closest_dst == -1 then
+			closest_dst = dst
+			closest = fak
 		end
 	end
 
-	return nil
+	return closest
 end
 
 function ClientsidedUppers:Take(unit)
