@@ -15,6 +15,14 @@ function ClientsidedUppers:Add(pos, rot, bits, min_distance, upgrade_lvl)
 	table.insert(ClientsidedUppers._client_sided_faks, fak)
 end
 
+function ClientsidedUppers.RemoveFirstAidKit(unit)
+	for i, fak in pairs(ClientsidedUppers._used_client_sided_faks) do
+		if fak.pos == unit:position() and fak.rot == unit:rotation() and fak.min_distance == min_distance then
+			table.remove(ClientsidedUppers._client_sided_faks, i)
+		end
+	end
+end
+
 function ClientsidedUppers.GetFirstAidKit(pos)
 	for i, fak in pairs(ClientsidedUppers._client_sided_faks) do
 		local dst = mvector3.distance(pos, fak.pos)
@@ -219,6 +227,8 @@ function ClientsidedUppers.Hooks()
 
 			if used_fak then
 				used_fak:SyncUsage(unit)
+			else
+				ClientsidedUppers.RemoveFirstAidKit(unit)
 			end
 
 			if min_distance ~= 0 then
