@@ -15,9 +15,11 @@ function ClientsidedUppers:Add(pos, rot, bits, min_distance, upgrade_lvl)
 	table.insert(ClientsidedUppers._client_sided_faks, fak)
 end
 
-function ClientsidedUppers.RemoveFirstAidKit(unit)
-	for i, fak in pairs(ClientsidedUppers._used_client_sided_faks) do
-		if fak.pos == unit:position() and fak.rot == unit:rotation() and fak.min_distance == min_distance then
+function ClientsidedUppers.Remove(pos)
+	for i, fak in pairs(ClientsidedUppers._client_sided_faks) do
+		local dst = mvector3.distance(pos, fak.pos)
+
+		if dst <= 5 then
 			table.remove(ClientsidedUppers._client_sided_faks, i)
 		end
 	end
@@ -28,7 +30,6 @@ function ClientsidedUppers.GetFirstAidKit(pos)
 		local dst = mvector3.distance(pos, fak.pos)
 
 		if dst <= fak.min_distance then
-			table.remove(ClientsidedUppers._client_sided_faks, i)
 			return fak
 		end
 	end
@@ -36,9 +37,25 @@ function ClientsidedUppers.GetFirstAidKit(pos)
 	return nil
 end
 
-function ClientsidedUppers.GetUsedFirstAidKit(unit)
+function ClientsidedUppers.AddUsed(fak)
+	table.insert(ClientsidedUppers._used_client_sided_faks, fak)
+end
+
+function ClientsidedUppers.RemoveUsed(pos)
 	for i, fak in pairs(ClientsidedUppers._used_client_sided_faks) do
-		if fak.pos == unit:position() and fak.rot == unit:rotation() and fak.min_distance == min_distance then
+		local dst = mvector3.distance(pos, fak.pos)
+
+		if dst <= 5 then
+			table.remove(ClientsidedUppers._used_client_sided_faks, i)
+		end
+	end
+end
+
+function ClientsidedUppers.GetUsedFirstAidKit(pos)
+	for i, fak in pairs(ClientsidedUppers._used_client_sided_faks) do
+		local dst = mvector3.distance(pos, fak.pos)
+
+		if dst <= 5 then
 			return fak
 		end
 	end
@@ -47,14 +64,15 @@ function ClientsidedUppers.GetUsedFirstAidKit(unit)
 end
 
 function ClientsidedUppers:Take(unit)
-	table.insert(ClientsidedUppers._used_client_sided_faks, self)
+	ClientsidedUppers.Remove(self.pos)
+	ClientsidedUppers.AddUsed(self)
 
 	unit:character_damage():band_aid_health()
 
 	managers.chat:_receive_message(
 		ChatManager.GAME,
 		"ClientsidedUppers",
-		"Clientsided FAK used.",
+		"took clientsided FAK",
 		tweak_data.system_chat_color
 	)
 
@@ -68,16 +86,7 @@ function ClientsidedUppers:SyncUsage(unit)
 		managers.network:session():send_to_peers_synched("sync_unit_event_id_16", unit, "base", 2)
 	end
 
-	managers.chat:_receive_message(
-		ChatManager.GAME,
-		"ClientsidedUppers",
-		"Clientsided FAK synced.",
-		tweak_data.system_chat_color
-	)
-
 	unit:_set_empty()
-
-	table.remove(ClientsidedUppers._used_client_sided_faks, self)
 end
 
 function ClientsidedUppers.Hooks()
@@ -221,19 +230,25 @@ function ClientsidedUppers.Hooks()
 				PlayerStandard.say_line(self, "g80x_plu")
 			end
 		end
-	elseif RequiredScript == "lib/network/handlers/unitnetworkhandler" then
-		function UnitNetworkHandler:first_aid_kit_sync(unit, min_distance)
-			local used_fak = ClientsidedUppers.GetUsedFirstAidKit(unit)
+	elseif RequiredScript == "lib/units/equipment/first_aid_kit/firstaidkitbase" then
+		function FirstAidKitBase.Add(obj, pos, min_distance)
+			local used_fak = ClientsidedUppers.GetUsedFirstAidKit(pos)
 
 			if used_fak then
-				used_fak:SyncUsage(unit)
+				used_fak:SyncUsage(obj._unit)
+				ClientsidedUppers.RemoveUsed(pos)
 			else
-				ClientsidedUppers.RemoveFirstAidKit(unit)
+				ClientsidedUppers.Remove(pos)
 			end
 
-			if min_distance ~= 0 then
-				unit:base():sync_auto_recovery(min_distance)
-			end
+			table.insert(
+				FirstAidKitBase.List,
+				{
+					obj = obj,
+					pos = pos,
+					min_distance = min_distance
+				}
+			)
 		end
 	end
 end
