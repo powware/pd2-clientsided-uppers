@@ -12,3 +12,6 @@ This list is used when the FAK sync is received at a client, now the list is che
 This then means it has already been used and effectively shouldn't exist, so it instantly get a request to be synced as used.
 
 I know that a person with a better ping than the one using this mod will be able to trigger and use the FAK before it is received at the deploying client and the deploying client may have used it clientsided already, so it was essentially used twice. But I don't know if this isn't possible already and not a problem.
+
+##### Credit
+[AutoUpdater](https://github.com/HugoZink/PD2AutoUpdateExample) from [HugoZink](https://github.com/HugoZink)
