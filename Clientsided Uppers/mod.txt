@@ -9,11 +9,13 @@
 	"priority": 999,
 	"image" : "uppers.png",
 	"updates" : [
-        {
-            "revision" : 2,
-            "identifier" : "ClientsidedUppers"
-        }
-    ],
+		{
+			"identifier" : "ClientsidedUppers",
+			"host" : {
+				"meta" : "https://github.com/powware/pd2-clientsided-uppers/releases/download/refs%2Fheads%2Fmaster/meta.json"
+			}
+		}
+	],
 	"hooks" : [
 		{ 	
 			"hook_id" : "lib/units/beings/player/playerequipment", 

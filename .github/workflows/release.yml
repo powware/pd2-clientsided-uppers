@@ -15,7 +15,7 @@ jobs:
         github_token: ${{ secrets.GITHUB_TOKEN }}
     - name: Archive Mod
       run: |
-         .\.github\7za.exe -tzip a ".\Clientsided Uppers.zip" ".\Clientsided Uppers"
+         .\.github\7za.exe -tzip a ".\ClientsidedUppers.zip" ".\Clientsided Uppers"
       shell: powershell
     - name: Create New Release
       id: create_release
@@ -36,8 +36,8 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }} # This pulls from the CREATE RELEASE step above, referencing it's ID to get its outputs object, which include a `upload_url`. See this blog post for more info: https://jasonet.co/posts/new-features-of-github-actions/#passing-data-to-future-steps 
-        asset_path: "./Clientsided Uppers.zip"
-        asset_name: "Clientsided Uppers.zip"
+        asset_path: "./ClientsidedUppers.zip"
+        asset_name: "ClientsidedUppers.zip"
         asset_content_type: application/zip
     - name: Hash mod and create mod meta file
       id: create_meta_file
