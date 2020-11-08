@@ -4,9 +4,8 @@
     "description" : "Fixes Uppers not triggering from delayed FirstAidKit Deployment caused by Network lag as a Client.",
     "author" : "powware",
     "contact" : "https://github.com/powware",
-    "version" : "1.1",
+    "version" : "1.2",
 	"color" : "0.0 1 0.0",
-	"priority": 999,
 	"image" : "uppers.png",
 	"updates" : [
 		{
