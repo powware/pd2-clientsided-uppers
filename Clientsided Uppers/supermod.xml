@@ -1,0 +1,6 @@
+<?xml version="1.0"?>
+<mod>
+  <assets base_path="assets/">
+    <file name="units/pd2_dlc_old_hoxton/equipment/gen_equipment_first_aid_kit/gen_equipment_first_aid_kit_clientsided.unit" load="startup"/>
+  </assets>
+</mod>
