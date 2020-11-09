@@ -58,12 +58,6 @@ function ClientsidedUppers.Hooks()
 					Bitwise:lshift(auto_recovery, FirstAidKitBase.auto_recovery_shift) +
 					Bitwise:lshift(upgrade_lvl, FirstAidKitBase.upgrade_lvl_shift)
 
-				if auto_recovery == 1 then
-					local min_distance = tweak_data.upgrades.values.first_aid_kit.first_aid_kit_auto_recovery[1]
-					ClientsidedUppers.Spawn(pos, rot, min_distance, upgrade_lvl)
-					return
-				end
-
 				if Network:is_client() then
 					if auto_recovery == 1 then
 						local min_distance = tweak_data.upgrades.values.first_aid_kit.first_aid_kit_auto_recovery[1]
