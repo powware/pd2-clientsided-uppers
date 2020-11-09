@@ -6,4 +6,4 @@ With this mod FAKs get deployed clientsided, this means they are placed instanta
 ##### Credit
 [AutoUpdater](https://github.com/HugoZink/PD2AutoUpdateExample) from [HugoZink](https://github.com/HugoZink)
 
-Help with Visuals and Asset Loding from [Hoppip](https://modworkshop.net/user/3972)
+Help with Visuals and Asset Loading from [Hoppip](https://modworkshop.net/user/3972)
