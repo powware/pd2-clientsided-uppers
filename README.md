@@ -4,6 +4,5 @@ Clientsided Uppers aims at fixing the delay of deploying a FirstAidKit (FAK) as 
 With this mod FAKs get deployed clientsided, this means they are placed instantaneously with visuals, are interactable and trigger Uppers.
 
 ##### Credit
-[AutoUpdater](https://github.com/HugoZink/PD2AutoUpdateExample) from [HugoZink](https://github.com/HugoZink)
-
-Help with Visuals and Asset Loading from [Hoppip](https://modworkshop.net/user/3972)
+* [AutoUpdater](https://github.com/HugoZink/PD2AutoUpdateExample) from [HugoZink](https://github.com/HugoZink)
+* Help with Visuals and Asset Loading from [Hoppip](https://modworkshop.net/user/3972)
