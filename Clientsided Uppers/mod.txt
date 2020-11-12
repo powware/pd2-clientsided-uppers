@@ -1,37 +1,40 @@
 {
-	"blt_version" : 2,
-    "name" : "Clientsided Uppers",
-    "description" : "Makes FirstAidKits clientsided until they are synced by the host. This effectively neglects all network lag involving the use of FAKs.",
-    "author" : "powware",
-    "contact" : "https://github.com/powware",
-    "version" : "2.0",
-	"color" : "0.0 1 0.0",
-	"image" : "uppers.png",
-	"updates" : [
+	"blt_version": 2,
+	"name": "Clientsided Uppers",
+	"description": "Makes FirstAidKits clientsided until they are synced by the host. This effectively neglects all network lag involving the use of FAKs.",
+	"author": "powware",
+	"contact": "https://github.com/powware",
+	"version": "2.0",
+	"color": "0.1 1 0.5",
+	"image": "uppers.png",
+	"updates": [
 		{
-			"identifier" : "ClientsidedUppers",
-			"host" : {
-				"meta" : "https://github.com/powware/pd2-clientsided-uppers/releases/download/refs%2Fheads%2Fmaster/meta.json"
+			"identifier": "ClientsidedUppers",
+			"host": {
+				"meta": "https://github.com/powware/pd2-clientsided-uppers/releases/download/refs%2Fheads%2Fmaster/meta.json"
 			}
 		}
 	],
-	"hooks" : [
-		{ 	
-			"hook_id" : "lib/units/beings/player/playerequipment", 
-			"script_path" : "main.lua"
+	"hooks": [
+		{
+			"hook_id": "lib/units/beings/player/playerequipment",
+			"script_path": "main.lua"
 		},
-        { 	
-			"hook_id" : "lib/units/beings/player/playerdamage", 
-			"script_path" : "main.lua"
+		{
+			"hook_id": "lib/units/beings/player/playerdamage",
+			"script_path": "main.lua"
 		},
-		{ 	
-			"hook_id" : "lib/units/equipment/first_aid_kit/firstaidkitbase", 
-			"script_path" : "main.lua"
+		{
+			"hook_id": "lib/units/equipment/first_aid_kit/firstaidkitbase",
+			"script_path": "main.lua"
 		},
-		{ 	
-			"hook_id" : "lib/units/interactions/interactionext", 
-			"script_path" : "main.lua"
+		{
+			"hook_id": "lib/units/interactions/interactionext",
+			"script_path": "main.lua"
+		},
+		{
+			"hook_id": "lib/managers/menumanager",
+			"script_path": "main.lua"
 		}
-	]		
+	]
 }
-
