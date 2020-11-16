@@ -15,7 +15,7 @@
     "clientsided_uppers_blue_desc": "",
     "clientsided_uppers_opacity_title": "Opacity",
     "clientsided_uppers_opacity_desc": "Changes the contour opacity of clientsided FAKs. This makes them distinguishable from their synchronized state.",
-    "clientsided_uppers_override_selected_title": "Override Selected Contour",
+    "clientsided_uppers_override_selected_title": "Override Selection Contour",
     "clientsided_uppers_override_selected_desc": "This option makes it so the default color, of selecting something interactable, is also overriden for clientsided FAKs.",
     "clientsided_uppers_default_title": "Default Options",
     "clientsided_uppers_default_desc": "Resets all options to their default state."
