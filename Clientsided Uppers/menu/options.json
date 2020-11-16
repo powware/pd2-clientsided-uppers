@@ -15,6 +15,28 @@
             "default_value": true
         },
         {
+            "type": "toggle",
+            "id": "clientsided_uppers_notify",
+            "title": "clientsided_uppers_notify_title",
+            "description": "clientsided_uppers_notify_desc",
+            "callback": "clientsided_uppers_notify_callback",
+            "value": "notify",
+            "default_value": true
+        },
+        {
+            "type": "divider",
+            "size": 16
+        },
+        {
+            "type": "toggle",
+            "id": "clientsided_uppers_custom_contour",
+            "title": "clientsided_uppers_custom_contour_title",
+            "description": "clientsided_uppers_custom_contour_desc",
+            "callback": "clientsided_uppers_custom_contour_callback",
+            "value": "custom_contour",
+            "default_value": true
+        },
+        {
             "type": "slider",
             "id": "clientsided_uppers_red",
             "title": "clientsided_uppers_red_title",
@@ -33,7 +55,7 @@
             "description": "clientsided_uppers_green_desc",
             "callback": "clientsided_uppers_green_callback",
             "value": "green",
-            "default_value": 1,
+            "default_value": 0.4,
             "max": 1,
             "min": 0,
             "step": 0.1
@@ -45,7 +67,7 @@
             "description": "clientsided_uppers_blue_desc",
             "callback": "clientsided_uppers_blue_callback",
             "value": "blue",
-            "default_value": 0.5,
+            "default_value": 1,
             "max": 1,
             "min": 0,
             "step": 0.1
@@ -61,6 +83,15 @@
             "max": 1,
             "min": 0,
             "step": 0.1
+        },
+        {
+            "type": "toggle",
+            "id": "clientsided_uppers_override_selected",
+            "title": "clientsided_uppers_override_selected_title",
+            "description": "clientsided_uppers_override_selected_desc",
+            "callback": "clientsided_uppers_override_selected_callback",
+            "value": "override_selected",
+            "default_value": true
         },
         {
             "type": "divider",

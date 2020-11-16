@@ -1,14 +1,19 @@
 ClientsidedUppers = ClientsidedUppers or {}
 ClientsidedUppers.default_settings = {
     cooldown_fix = true,
+    notify = false,
+    custom_contour = true,
     red = 0.1,
+    green = 0.4,
     blue = 1,
-    green = 0.5,
-    opacity = 1
+    opacity = 1,
+    override_selected = true
 }
 ClientsidedUppers._mod_path = ModPath
+ClientsidedUppers._options_menu_file = ClientsidedUppers._mod_path .. "menu/options.json"
 ClientsidedUppers._save_path = SavePath
 ClientsidedUppers._save_file = ClientsidedUppers._save_path .. "clientsided_uppers.json"
+ClientsidedUppers.List = {}
 
 function deep_copy(orig)
     local orig_type = type(orig)
@@ -25,15 +30,22 @@ function deep_copy(orig)
     return copy
 end
 
+function round(num, numDecimalPlaces)
+    local mult = 10 ^ (numDecimalPlaces or 0)
+    return math.floor(num * mult + 0.5) / mult
+end
+
+-- setup mod
 function ClientsidedUppers:Setup()
     if not self.settings then
         self:Load()
-        self.SetTweakData()
+        self.CreateContourColor()
     end
 
     self.SetupHooks()
 end
 
+-- load settings from file
 function ClientsidedUppers:Load()
     self.settings = deep_copy(self.default_settings)
     local file = io.open(self._save_file, "r")
@@ -54,6 +66,7 @@ function ClientsidedUppers:Load()
     end
 end
 
+-- save settings to file
 function ClientsidedUppers:Save()
     local file = io.open(self._save_file, "w+")
     if file then
@@ -62,39 +75,59 @@ function ClientsidedUppers:Save()
     end
 end
 
-function ClientsidedUppers.SetTweakData()
-    if not tweak_data.interaction.clientsided_first_aid_kit or not tweak_data.contour.clientsided_deployable then
-        tweak_data.interaction.clientsided_first_aid_kit = deep_copy(tweak_data.interaction.first_aid_kit)
-        tweak_data.interaction.clientsided_first_aid_kit.clientsided = true
-        tweak_data.interaction.clientsided_first_aid_kit.contour = "clientsided_deployable"
-        tweak_data.contour.clientsided_deployable = deep_copy(tweak_data.contour.deployable)
-    end
-
-    tweak_data.contour.clientsided_deployable.standard_color =
+-- combines the parts of the color from the settings
+function ClientsidedUppers.CreateContourColor()
+    ClientsidedUppers._contour_color =
         Vector3(ClientsidedUppers.settings.red, ClientsidedUppers.settings.green, ClientsidedUppers.settings.blue)
+end
 
-    for key, value in pairs(tweak_data.contour.clientsided_deployable) do
-        tweak_data.contour.clientsided_deployable[key] = value * ClientsidedUppers.settings.opacity
-    end
+-- notify that a clientsided FAK was taken
+function ClientsidedUppers.Notify()
+    managers.chat:_receive_message(
+        ChatManager.GAME,
+        "SYSTEM",
+        "Clientsided FirstAidKit was consumed.",
+        tweak_data.system_chat_color
+    )
 end
 
 -- spawns a fak without network sync as a custom asset
-function ClientsidedUppers.Spawn(pos, rot, min_distance, upgrade_lvl)
+function ClientsidedUppers.Spawn(pos, rot, min_distance, auto_recovery, upgrade_lvl)
     local unit_name =
         "units/pd2_dlc_old_hoxton/equipment/gen_equipment_first_aid_kit/gen_equipment_first_aid_kit_clientsided"
     local unit = World:spawn_unit(Idstring(unit_name), pos, rot)
     local fak = unit:base()
+    local pos = unit:position()
     fak._damage_reduction_upgrade = upgrade_lvl == 1
-    FirstAidKitBase.Add(fak, unit:position(), min_distance)
+
+    ClientsidedUppers.Add(fak, pos)
+
+    if auto_recovery == 1 then
+        fak._min_distance = min_distance
+
+        FirstAidKitBase.Add(fak, pos, min_distance)
+    end
 end
 
--- removes the closest clientsided FAK from the autorecovery list
+-- add clientsided FAK to a list of clientsided FAKs
+function ClientsidedUppers.Add(obj, pos)
+    table.insert(
+        ClientsidedUppers.List,
+        {
+            obj = obj,
+            pos = pos
+        }
+    )
+end
+
+-- removes the closest clientsided FAK from the list
 -- if the fak is empty it's usage is synchronized
 function ClientsidedUppers.Remove(pos)
     local closest_dst = -1
     local closest = 0
     local closest_fak = nil
-    for i, o in pairs(FirstAidKitBase.List) do
+
+    for i, o in pairs(ClientsidedUppers.List) do
         local dst = mvector3.distance(pos, o.pos)
 
         if o.obj._clientsided and (dst <= closest_dst or closest_dst == -1) then
@@ -104,13 +137,18 @@ function ClientsidedUppers.Remove(pos)
         end
     end
 
-    if closest >= 1 then
-        table.remove(FirstAidKitBase.List, closest)
+    if closest_fak then
+        table.remove(ClientsidedUppers.List, closest)
+
+        if closest_fak._min_distance then
+            FirstAidKitBase.Remove(closest_fak)
+        end
     end
 
     return closest_fak
 end
 
+-- setup hooks
 function ClientsidedUppers.SetupHooks()
     if RequiredScript == "lib/units/beings/player/playerequipment" then
         -- as a client instead of only sending a request to place a FAK
@@ -135,10 +173,9 @@ function ClientsidedUppers.SetupHooks()
                     Bitwise:lshift(upgrade_lvl, FirstAidKitBase.upgrade_lvl_shift)
 
                 if Network:is_client() then
-                    if auto_recovery == 1 then
-                        local min_distance = tweak_data.upgrades.values.first_aid_kit.first_aid_kit_auto_recovery[1]
-                        ClientsidedUppers.Spawn(pos, rot, min_distance, upgrade_lvl)
-                    end
+                    local min_distance = tweak_data.upgrades.values.first_aid_kit.first_aid_kit_auto_recovery[1]
+                    ClientsidedUppers.Spawn(pos, rot, min_distance, auto_recovery, upgrade_lvl)
+
                     managers.network:session():send_to_host("place_deployable_bag", "FirstAidKitBase", pos, rot, bits)
                 else
                     local unit = FirstAidKitBase.spawn(pos, rot, bits, managers.network:session():local_peer():id())
@@ -180,22 +217,16 @@ function ClientsidedUppers.SetupHooks()
         function FirstAidKitBase.GetFirstAidKit(pos)
             local closest_dst = -1
             local closest_fak = nil
-            local closest_clientsided_dst = -1
-            local closest_clientsided_fak = nil
             for i, o in pairs(FirstAidKitBase.List) do
                 local dst = mvector3.distance(pos, o.pos)
 
-                if not o.obj._empty and dst <= o.min_distance then
-                    if not o.obj._clientsided and (dst <= closest_dst or closest_dst == -1) then
-                        closest_dst = dst
-                        closest_fak = o.obj
-                    elseif o.obj._clientsided and (dst <= closest_clientsided_dst or closest_clientsided_dst == -1) then
-                        closest_clientsided_dst = dst
-                        closest_clientsided_fak = o.obj
-                    end
+                if not o.obj._empty and dst <= o.min_distance and (dst <= closest_dst or closest_dst == -1) then
+                    closest_dst = dst
+                    closest_fak = o.obj
                 end
             end
-            return closest_fak and closest_fak or closest_clientsided_fak
+
+            return closest_fak
         end
 
         -- takes synchronized and clientsided FAKs
@@ -212,11 +243,20 @@ function ClientsidedUppers.SetupHooks()
                 managers.player:activate_temporary_upgrade("temporary", "first_aid_damage_reduction")
             end
 
-            if not self._clientsided then
+            if self._clientsided then
+                if self._removal_needed then
+                    self._linked_fak:sync_usage()
+                end
+
+                if ClientsidedUppers.settings.notify then
+                    ClientsidedUppers.Notify()
+                end
+            else
                 if managers.network:session() then
                     managers.network:session():send_to_peers_synched("sync_unit_event_id_16", self._unit, "base", 2)
                 end
             end
+
             self:_set_empty()
         end
 
@@ -239,7 +279,12 @@ function ClientsidedUppers.SetupHooks()
                         self:sync_usage()
                         return
                     else
-                        fak:_set_empty()
+                        if not fak._unit:interaction() or not fak._unit:interaction()._tweak_data_at_interact_start then
+                            fak:_set_empty()
+                        else
+                            fak._removal_needed = true
+                            fak._linked_fak = self
+                        end
                     end
                 end
             end
@@ -254,6 +299,28 @@ function ClientsidedUppers.SetupHooks()
             self:setup(bits)
         end
     elseif RequiredScript == "lib/units/interactions/interactionext" then
+        -- when an interaction object from the kind clientsided FAK is created
+        -- it receives a clientsided tag for interaction
+        function BaseInteractionExt:init(unit)
+            self._unit = unit
+
+            if self._unit:base() and self._unit:base()._clientsided then
+                self._clientsided = true
+            end
+
+            self._unit:set_extension_update_enabled(Idstring("interaction"), false)
+            self:refresh_material()
+
+            if not tweak_data.interaction[self.tweak_data] then
+                print("[BaseInteractionExt:init] - Missing Interaction Tweak Data: ", self.tweak_data)
+            end
+
+            self:set_tweak_data(self.tweak_data)
+            self:set_host_only(self.is_host_only)
+            self:set_active(self._tweak_data.start_active or self._tweak_data.start_active == nil and true)
+            self:_upd_interaction_topology()
+        end
+
         -- neglect network sync for clientsided faks
         function BaseInteractionExt:set_active(active, sync)
             if active and self:disabled() then
@@ -304,7 +371,7 @@ function ClientsidedUppers.SetupHooks()
                 self:set_contour("standard_color", opacity_value)
             end
 
-            if not self._tweak_data.clientsided and not self._host_only and sync and managers.network:session() then
+            if not self._clientsided and not self._host_only and sync and managers.network:session() then
                 local u_id = self._unit:id()
 
                 if u_id == -1 then
@@ -333,7 +400,50 @@ function ClientsidedUppers.SetupHooks()
                 )
             end
         end
+
+        -- when clientsided and custom color is enabled
+        -- apply the color instead of the regular color
+        function BaseInteractionExt:set_contour(color, opacity)
+            if self._tweak_data.no_contour or self._contour_override then
+                return
+            end
+
+            local contour_color = tweak_data.contour[self._tweak_data.contour or "interactable"][color]
+            local contour_opacity = opacity
+
+            if self._clientsided and ClientsidedUppers.settings.custom_contour then
+                if
+                    color == "standard_color" or
+                        (color == "selected_color" and ClientsidedUppers.settings.override_selected)
+                 then
+                    contour_color = ClientsidedUppers._contour_color
+                    contour_opacity = ClientsidedUppers.settings.opacity
+                end
+            end
+
+            local ids_contour_color = Idstring("contour_color")
+            local ids_contour_opacity = Idstring("contour_opacity")
+
+            for _, m in ipairs(self._materials) do
+                m:set_variable(ids_contour_color, contour_color)
+                m:set_variable(ids_contour_opacity, contour_opacity or self._active and 1 or 0)
+            end
+        end
+
+        -- when interation with a clientsided FAK was interrupted
+        -- and this FAK has already been synced durin the interaction
+        -- set it empty
+        function DoctorBagBaseInteractionExt:_at_interact_interupt(player, complete)
+            DoctorBagBaseInteractionExt.super._at_interact_interupt(self, player, complete)
+
+            local fak = self._unit:base()
+
+            if self._clientsided and not complete and fak and fak._removal_needed then
+                fak:_set_empty()
+            end
+        end
     elseif RequiredScript == "lib/units/beings/player/playerdamage" then
+        -- at playerdamage creation cooldown is fixed
         Hooks:PostHook(
             PlayerDamage,
             "init",
@@ -361,37 +471,52 @@ function ClientsidedUppers.SetupHooks()
                     ClientsidedUppers.settings.cooldown_fix = item:value() == "on"
                 end
 
+                function MenuCallbackHandler:clientsided_uppers_notify_callback(item)
+                    ClientsidedUppers.settings.notify = item:value() == "on"
+                end
+
+                function MenuCallbackHandler:clientsided_uppers_custom_contour_callback(item)
+                    ClientsidedUppers.settings.custom_contour = item:value() == "on"
+                end
+
                 function MenuCallbackHandler:clientsided_uppers_red_callback(item)
-                    ClientsidedUppers.settings.red = item:value()
+                    ClientsidedUppers.settings.red = round(item:value(), 2)
                 end
 
                 function MenuCallbackHandler:clientsided_uppers_green_callback(item)
-                    ClientsidedUppers.settings.green = item:value()
+                    ClientsidedUppers.settings.green = round(item:value(), 2)
                 end
 
                 function MenuCallbackHandler:clientsided_uppers_blue_callback(item)
-                    ClientsidedUppers.settings.blue = item:value()
+                    ClientsidedUppers.settings.blue = round(item:value(), 2)
                 end
 
                 function MenuCallbackHandler:clientsided_uppers_opacity_callback(item)
-                    ClientsidedUppers.settings.opacity = item:value()
+                    ClientsidedUppers.settings.opacity = round(item:value(), 2)
+                end
+
+                function MenuCallbackHandler:clientsided_uppers_override_selected_callback(item)
+                    ClientsidedUppers.settings.override_selected = item:value() == "on"
                 end
 
                 function MenuCallbackHandler:clientsided_uppers_back_callback(item)
-                    ClientsidedUppers.SetTweakData()
+                    ClientsidedUppers.CreateContourColor()
                     ClientsidedUppers:Save()
                 end
 
                 function MenuCallbackHandler:clientsided_uppers_default_callback(item)
                     MenuHelper:ResetItemsToDefaultValue(item, {["clientsided_uppers_cooldown_fix"] = true}, true)
+                    MenuHelper:ResetItemsToDefaultValue(item, {["clientsided_uppers_notify"] = true}, false)
+                    MenuHelper:ResetItemsToDefaultValue(item, {["clientsided_uppers_custom_contour"] = true}, true)
                     MenuHelper:ResetItemsToDefaultValue(item, {["clientsided_uppers_red"] = true}, 0.1)
-                    MenuHelper:ResetItemsToDefaultValue(item, {["clientsided_uppers_green"] = true}, 1)
-                    MenuHelper:ResetItemsToDefaultValue(item, {["clientsided_uppers_blue"] = true}, 0.5)
+                    MenuHelper:ResetItemsToDefaultValue(item, {["clientsided_uppers_green"] = true}, 0.4)
+                    MenuHelper:ResetItemsToDefaultValue(item, {["clientsided_uppers_blue"] = true}, 1)
                     MenuHelper:ResetItemsToDefaultValue(item, {["clientsided_uppers_opacity"] = true}, 1)
+                    MenuHelper:ResetItemsToDefaultValue(item, {["clientsided_uppers_override_selected"] = true}, true)
                 end
 
                 MenuHelper:LoadFromJsonFile(
-                    ClientsidedUppers._mod_path .. "menu/options.json",
+                    ClientsidedUppers._options_menu_file,
                     ClientsidedUppers,
                     ClientsidedUppers.settings
                 )

@@ -7,7 +7,7 @@
       <var name="tweak_data" value="clientsided" />
     </extension>
     <extension name="interaction" class="DoctorBagBaseInteractionExt">
-      <var name="tweak_data" value="clientsided_first_aid_kit" />
+      <var name="tweak_data" value="first_aid_kit" />
     </extension>
   </extensions>
   <sounds>
