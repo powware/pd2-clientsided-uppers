@@ -279,11 +279,12 @@ function ClientsidedUppers.SetupHooks()
                         self:sync_usage()
                         return
                     else
-                        if not fak._unit:interaction() or not fak._unit:interaction()._tweak_data_at_interact_start then
-                            fak:_set_empty()
-                        else
+                        local interaction = fak._unit:interaction()
+                        if interaction and interaction._tweak_data_at_interact_start == interaction.tweak_data then
                             fak._removal_needed = true
                             fak._linked_fak = self
+                        else
+                            fak:_set_empty()
                         end
                     end
                 end
@@ -433,8 +434,8 @@ function ClientsidedUppers.SetupHooks()
         -- when interation with a clientsided FAK was interrupted
         -- and this FAK has already been synced durin the interaction
         -- set it empty
-        function DoctorBagBaseInteractionExt:_at_interact_interupt(player, complete)
-            DoctorBagBaseInteractionExt.super._at_interact_interupt(self, player, complete)
+        function DoctorBagBaseInteractionExt:interact_interupt(player, complete)
+            DoctorBagBaseInteractionExt.super.super.interact_interupt(self, player, complete)
 
             local fak = self._unit:base()
 
