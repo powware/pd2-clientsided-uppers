@@ -91,6 +91,19 @@ function ClientsidedUppers.Notify()
     )
 end
 
+function ClientsidedUppers.UpdateButtons()
+    for _, item in pairs(MenuHelper:GetMenu("clientsided_uppers")._items_list) do
+        if
+            item:name() == "clientsided_uppers_red" or item:name() == "clientsided_uppers_green" or
+                item:name() == "clientsided_uppers_blue" or
+                item:name() == "clientsided_uppers_opacity" or
+                item:name() == "clientsided_uppers_override_selected"
+         then
+            item:set_enabled(ClientsidedUppers.settings.custom_contour)
+        end
+    end
+end
+
 -- spawns a fak without network sync as a custom asset
 function ClientsidedUppers.Spawn(pos, rot, min_distance, auto_recovery, upgrade_lvl)
     local unit_name =
@@ -478,6 +491,8 @@ function ClientsidedUppers.SetupHooks()
 
                 function MenuCallbackHandler:clientsided_uppers_custom_contour_callback(item)
                     ClientsidedUppers.settings.custom_contour = item:value() == "on"
+
+                    ClientsidedUppers.UpdateButtons()
                 end
 
                 function MenuCallbackHandler:clientsided_uppers_red_callback(item)
@@ -514,6 +529,8 @@ function ClientsidedUppers.SetupHooks()
                     MenuHelper:ResetItemsToDefaultValue(item, {["clientsided_uppers_blue"] = true}, 1)
                     MenuHelper:ResetItemsToDefaultValue(item, {["clientsided_uppers_opacity"] = true}, 1)
                     MenuHelper:ResetItemsToDefaultValue(item, {["clientsided_uppers_override_selected"] = true}, true)
+
+                    ClientsidedUppers.UpdateButtons()
                 end
 
                 MenuHelper:LoadFromJsonFile(
