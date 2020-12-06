@@ -1,6 +1,6 @@
 {
     "clientsided_uppers_title": "Clientsided Uppers",
-    "clientsided_uppers_desc": "Mod Options",
+    "clientsided_uppers_desc": "",
     "clientsided_uppers_cooldown_fix_title": "Fix Uppers cooldown",
     "clientsided_uppers_cooldown_fix_desc": "Normally Uppers starts on cooldown, when you start/join a heist. So the first 20 seconds you can't trigger Uppers. This option fixes this and enables Uppers from the start.",
     "clientsided_uppers_notify_title": "Notify Consumption",
@@ -15,7 +15,7 @@
     "clientsided_uppers_blue_desc": "",
     "clientsided_uppers_opacity_title": "Opacity",
     "clientsided_uppers_opacity_desc": "Changes the contour opacity of clientsided FAKs. This makes them distinguishable from their synchronized state.",
-    "clientsided_uppers_override_selected_title": "Override Selected Contour",
+    "clientsided_uppers_override_selected_title": "Override Selection Contour",
     "clientsided_uppers_override_selected_desc": "This option makes it so the default color, of selecting something interactable, is also overriden for clientsided FAKs.",
     "clientsided_uppers_default_title": "Default Options",
     "clientsided_uppers_default_desc": "Resets all options to their default state."

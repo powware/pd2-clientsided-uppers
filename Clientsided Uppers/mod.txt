@@ -4,7 +4,7 @@
 	"description": "Makes FirstAidKits clientsided until they are synced by the host. This effectively neglects all network lag involving the use of FAKs.",
 	"author": "powware",
 	"contact": "https://github.com/powware",
-	"version": "2.0",
+	"version": "2.3",
 	"color": "0.1 1 0.5",
 	"image": "uppers.png",
 	"updates": [

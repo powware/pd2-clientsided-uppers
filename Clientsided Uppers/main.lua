@@ -91,6 +91,19 @@ function ClientsidedUppers.Notify()
     )
 end
 
+function ClientsidedUppers.UpdateButtons()
+    for _, item in pairs(MenuHelper:GetMenu("clientsided_uppers")._items_list) do
+        if
+            item:name() == "clientsided_uppers_red" or item:name() == "clientsided_uppers_green" or
+                item:name() == "clientsided_uppers_blue" or
+                item:name() == "clientsided_uppers_opacity" or
+                item:name() == "clientsided_uppers_override_selected"
+         then
+            item:set_enabled(ClientsidedUppers.settings.custom_contour)
+        end
+    end
+end
+
 -- spawns a fak without network sync as a custom asset
 function ClientsidedUppers.Spawn(pos, rot, min_distance, auto_recovery, upgrade_lvl)
     local unit_name =
@@ -244,20 +257,24 @@ function ClientsidedUppers.SetupHooks()
             end
 
             if self._clientsided then
-                if self._removal_needed then
-                    self._linked_fak:sync_usage()
-                end
-
                 if ClientsidedUppers.settings.notify then
                     ClientsidedUppers.Notify()
+                end
+
+                self._empty = true
+
+                if self._removal_needed then
+                    self._linked_fak:sync_usage()
+
+                    self:destroy_clientsided()
                 end
             else
                 if managers.network:session() then
                     managers.network:session():send_to_peers_synched("sync_unit_event_id_16", self._unit, "base", 2)
                 end
-            end
 
-            self:_set_empty()
+                self:_set_empty()
+            end
         end
 
         -- the syncrhonization part of taking a FAK stripped from the take function
@@ -275,17 +292,16 @@ function ClientsidedUppers.SetupHooks()
             if Network:is_client() and peer_id == managers.network:session():local_peer():id() then
                 local fak = ClientsidedUppers.Remove(self._unit:position())
                 if fak then
+                    local interaction = fak._unit:interaction()
                     if fak._empty then
                         self:sync_usage()
+                    elseif interaction and interaction._tweak_data_at_interact_start == interaction.tweak_data then
+                        fak._removal_needed = true
+                        fak._linked_fak = self
                         return
-                    else
-                        if not fak._unit:interaction() or not fak._unit:interaction()._tweak_data_at_interact_start then
-                            fak:_set_empty()
-                        else
-                            fak._removal_needed = true
-                            fak._linked_fak = self
-                        end
                     end
+
+                    fak:destroy_clientsided()
                 end
             end
 
@@ -297,6 +313,16 @@ function ClientsidedUppers.SetupHooks()
 
             managers.player:verify_equipment(peer_id, "first_aid_kit")
             self:setup(bits)
+        end
+
+        function FirstAidKitBase:destroy_clientsided()
+            if self._unit:interaction() then
+                self._unit:interaction():destroy()
+            end
+
+            if alive(self._unit) then
+                World:delete_unit(self._unit)
+            end
         end
     elseif RequiredScript == "lib/units/interactions/interactionext" then
         -- when an interaction object from the kind clientsided FAK is created
@@ -426,20 +452,21 @@ function ClientsidedUppers.SetupHooks()
 
             for _, m in ipairs(self._materials) do
                 m:set_variable(ids_contour_color, contour_color)
-                m:set_variable(ids_contour_opacity, contour_opacity or self._active and 1 or 0)
+                m:set_variable(ids_contour_opacity, self._active and (contour_opacity or 1) or 0)
             end
         end
 
         -- when interation with a clientsided FAK was interrupted
         -- and this FAK has already been synced durin the interaction
         -- set it empty
-        function DoctorBagBaseInteractionExt:_at_interact_interupt(player, complete)
-            DoctorBagBaseInteractionExt.super._at_interact_interupt(self, player, complete)
+        function DoctorBagBaseInteractionExt:interact_interupt(player, complete)
+            DoctorBagBaseInteractionExt.super.super.interact_interupt(self, player, complete)
 
             local fak = self._unit:base()
 
             if self._clientsided and not complete and fak and fak._removal_needed then
-                fak:_set_empty()
+                fak._empty = true
+                fak:destroy_clientsided()
             end
         end
     elseif RequiredScript == "lib/units/beings/player/playerdamage" then
@@ -477,6 +504,8 @@ function ClientsidedUppers.SetupHooks()
 
                 function MenuCallbackHandler:clientsided_uppers_custom_contour_callback(item)
                     ClientsidedUppers.settings.custom_contour = item:value() == "on"
+
+                    ClientsidedUppers.UpdateButtons()
                 end
 
                 function MenuCallbackHandler:clientsided_uppers_red_callback(item)
@@ -513,6 +542,8 @@ function ClientsidedUppers.SetupHooks()
                     MenuHelper:ResetItemsToDefaultValue(item, {["clientsided_uppers_blue"] = true}, 1)
                     MenuHelper:ResetItemsToDefaultValue(item, {["clientsided_uppers_opacity"] = true}, 1)
                     MenuHelper:ResetItemsToDefaultValue(item, {["clientsided_uppers_override_selected"] = true}, true)
+
+                    ClientsidedUppers.UpdateButtons()
                 end
 
                 MenuHelper:LoadFromJsonFile(
