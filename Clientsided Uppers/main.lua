@@ -15,7 +15,7 @@ ClientsidedUppers._save_path = SavePath
 ClientsidedUppers._save_file = ClientsidedUppers._save_path .. "clientsided_uppers.json"
 ClientsidedUppers.List = {}
 
-function deep_copy(orig)
+local function deep_copy(orig)
     local orig_type = type(orig)
     local copy
     if orig_type == "table" then
@@ -28,11 +28,6 @@ function deep_copy(orig)
         copy = orig
     end
     return copy
-end
-
-function round(num, numDecimalPlaces)
-    local mult = 10 ^ (numDecimalPlaces or 0)
-    return math.floor(num * mult + 0.5) / mult
 end
 
 -- setup mod
@@ -85,9 +80,9 @@ end
 function ClientsidedUppers.Notify()
     managers.chat:_receive_message(
         ChatManager.GAME,
-        "SYSTEM",
-        "Clientsided FirstAidKit was consumed.",
-        tweak_data.system_chat_color
+        "CLIENTSIDED UPPERS",
+        "FirstAidKit consumed.",
+        Color(1, 0.1, 1, 0.5)
     )
 end
 
@@ -133,27 +128,39 @@ function ClientsidedUppers.Add(obj, pos)
     )
 end
 
+function ClientsidedUppers.RemoveFromUppers(fak)
+    for i, o in pairs(ClientsidedUppers.List) do
+        if o.obj == fak then
+            o.obj = nil
+        end
+    end
+
+    if fak._min_distance then
+        FirstAidKitBase.Remove(fak)
+    end
+end
+
 -- removes the closest clientsided FAK from the list
 -- if the fak is empty it's usage is synchronized
 function ClientsidedUppers.Remove(pos)
     local closest_dst = -1
-    local closest = 0
+    local closest_index = 0
     local closest_fak = nil
 
     for i, o in pairs(ClientsidedUppers.List) do
-        local dst = mvector3.distance(pos, o.pos)
+        local dst = mvector3.distance(o.pos, pos)
 
-        if o.obj._clientsided and (dst <= closest_dst or closest_dst == -1) then
+        if dst <= closest_dst or closest_dst == -1 then
             closest_dst = dst
-            closest = i
+            closest_index = i
             closest_fak = o.obj
         end
     end
 
-    if closest_fak then
-        table.remove(ClientsidedUppers.List, closest)
+    if closest_index then
+        table.remove(ClientsidedUppers.List, closest_index)
 
-        if closest_fak._min_distance then
+        if closest_fak and closest_fak._min_distance then
             FirstAidKitBase.Remove(closest_fak)
         end
     end
@@ -265,25 +272,26 @@ function ClientsidedUppers.SetupHooks()
 
                 if self._removal_needed then
                     self._linked_fak:sync_usage()
-
-                    self:destroy_clientsided()
                 end
+
+                ClientsidedUppers.RemoveFromUppers(self)
+
+                self:delete_clientsided()
             else
-                if managers.network:session() then
-                    managers.network:session():send_to_peers_synched("sync_unit_event_id_16", self._unit, "base", 2)
-                end
-
-                self:_set_empty()
+                self:sync_usage()
             end
         end
 
         -- the syncrhonization part of taking a FAK stripped from the take function
         function FirstAidKitBase:sync_usage()
+            self:_set_empty()
+
+            self._unit:set_visible(false)
+            self._unit:interaction():set_active(false)
+
             if managers.network:session() then
                 managers.network:session():send_to_peers_synched("sync_unit_event_id_16", self._unit, "base", 2)
             end
-
-            self:_set_empty()
         end
 
         -- when the incoming FAK to be synchronized is owned by us we remove it's clientsided counterpart
@@ -293,15 +301,14 @@ function ClientsidedUppers.SetupHooks()
                 local fak = ClientsidedUppers.Remove(self._unit:position())
                 if fak then
                     local interaction = fak._unit:interaction()
-                    if fak._empty then
-                        self:sync_usage()
-                    elseif interaction and interaction._tweak_data_at_interact_start == interaction.tweak_data then
+                    if interaction and interaction._tweak_data_at_interact_start == interaction.tweak_data then -- when clientsided FAK is being interacted with
                         fak._removal_needed = true
                         fak._linked_fak = self
-                        return
+                    else
+                        fak:delete_clientsided()
                     end
-
-                    fak:destroy_clientsided()
+                else
+                    self:sync_usage()
                 end
             end
 
@@ -315,7 +322,7 @@ function ClientsidedUppers.SetupHooks()
             self:setup(bits)
         end
 
-        function FirstAidKitBase:destroy_clientsided()
+        function FirstAidKitBase:delete_clientsided()
             if self._unit:interaction() then
                 self._unit:interaction():destroy()
             end
@@ -466,7 +473,7 @@ function ClientsidedUppers.SetupHooks()
 
             if self._clientsided and not complete and fak and fak._removal_needed then
                 fak._empty = true
-                fak:destroy_clientsided()
+                fak:delete_clientsided()
             end
         end
     elseif RequiredScript == "lib/units/beings/player/playerdamage" then
@@ -509,19 +516,19 @@ function ClientsidedUppers.SetupHooks()
                 end
 
                 function MenuCallbackHandler:clientsided_uppers_red_callback(item)
-                    ClientsidedUppers.settings.red = round(item:value(), 2)
+                    ClientsidedUppers.settings.red = math.round_with_precision(item:value(), 2)
                 end
 
                 function MenuCallbackHandler:clientsided_uppers_green_callback(item)
-                    ClientsidedUppers.settings.green = round(item:value(), 2)
+                    ClientsidedUppers.settings.green = math.round_with_precision(item:value(), 2)
                 end
 
                 function MenuCallbackHandler:clientsided_uppers_blue_callback(item)
-                    ClientsidedUppers.settings.blue = round(item:value(), 2)
+                    ClientsidedUppers.settings.blue = math.round_with_precision(item:value(), 2)
                 end
 
                 function MenuCallbackHandler:clientsided_uppers_opacity_callback(item)
-                    ClientsidedUppers.settings.opacity = round(item:value(), 2)
+                    ClientsidedUppers.settings.opacity = math.round_with_precision(item:value(), 2)
                 end
 
                 function MenuCallbackHandler:clientsided_uppers_override_selected_callback(item)
