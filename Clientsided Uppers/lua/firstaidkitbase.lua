@@ -58,7 +58,7 @@ function FirstAidKitBase:take(unit)
 
         self._empty = true
 
-        if self._removal_needed then
+        if self._linked_fak then
             self._linked_fak:sync_usage()
         end
 
@@ -86,15 +86,14 @@ end
 -- when it was already used clientsided we synchronize it's usage
 function FirstAidKitBase:sync_setup(bits, peer_id)
     if Network:is_client() and peer_id == managers.network:session():local_peer():id() then
-        local clientsided_fak = ClientsidedUppers.Remove(self._unit:position())
-        if clientsided_fak then
-            local interaction = clientsided_fak._unit:interaction()
-            if interaction and interaction._tweak_data_at_interact_start == interaction.tweak_data then -- when clientsided FAK is being interacted with
-                clientsided_fak._removal_needed = true
-                clientsided_fak._linked_fak = self
-                self._linked_clientsided_fak = clientsided_fak
+        local fak = ClientsidedUppers.Remove(self._unit:position())
+        if fak then
+            local interaction = fak._unit:interaction()
+            if interaction and interaction._tweak_data_at_interact_start == interaction.tweak_data then -- when clientsided FAK is being interacted with, create limbo where it only exists until interaction is interrupted, completed or the real FAK is usage synced
+                fak._linked_fak = self
+                self._linked_clientsided_fak = fak
             else
-                clientsided_fak:delete_clientsided()
+                fak:delete_clientsided()
             end
         else
             self:sync_usage()
@@ -124,26 +123,16 @@ function FirstAidKitBase:delete_clientsided()
     end
 end
 
-function FirstAidKitBase:_set_empty()
-    self._empty = true
-    local unit = self._unit
+function FirstAidKitBase:sync_net_event(event_id)
+    if event_id == 1 then
+        self:_set_dynamic()
+    elseif event_id == 2 then
 
-    if Network:is_server() or unit:id() == -1 then
-        unit:set_slot(0)
-    else
         if self._linked_clientsided_fak then
             self._linked_clientsided_fak._empty = true
             self._linked_clientsided_fak:delete_clientsided()
         end
 
-        unit:set_visible(false)
-
-        local int_ext = unit:interaction()
-
-        if int_ext then
-            int_ext:set_active(false)
-        end
-
-        unit:set_enabled(false)
+        self:_set_empty()
     end
 end

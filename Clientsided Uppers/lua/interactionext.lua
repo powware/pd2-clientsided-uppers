@@ -125,7 +125,7 @@ function DoctorBagBaseInteractionExt:interact_interupt(player, complete)
 
     local fak = self._unit:base()
 
-    if self._clientsided and not complete and fak and fak._removal_needed then
+    if self._clientsided and fak and fak._linked_fak and not complete then
         fak._empty = true
         fak:delete_clientsided()
     end
