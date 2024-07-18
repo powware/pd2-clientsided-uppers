@@ -18,23 +18,27 @@
 	"hooks": [
 		{
 			"hook_id": "lib/units/beings/player/playerequipment",
-			"script_path": "main.lua"
+			"script_path": "lua/playerequipment.lua"
 		},
 		{
 			"hook_id": "lib/units/beings/player/playerdamage",
-			"script_path": "main.lua"
+			"script_path": "lua/playerdamage.lua"
 		},
 		{
 			"hook_id": "lib/units/equipment/first_aid_kit/firstaidkitbase",
-			"script_path": "main.lua"
+			"script_path": "lua/firstaidkitbase.lua"
 		},
 		{
 			"hook_id": "lib/units/interactions/interactionext",
-			"script_path": "main.lua"
+			"script_path": "lua/interactionext.lua"
 		},
 		{
 			"hook_id": "lib/managers/menumanager",
+			"script_path": "lua/main.lua"
+		},
+		{
+			"hook_id": "core/lib/system/coresystem",
 			"script_path": "main.lua"
-		}
+		},
 	]
 }
