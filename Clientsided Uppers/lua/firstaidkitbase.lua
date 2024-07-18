@@ -111,6 +111,8 @@ function FirstAidKitBase:sync_setup(bits, peer_id)
 end
 
 function FirstAidKitBase:delete_clientsided()
+    self._unit:set_visible(false)
+
     if self._unit:interaction() then
         self._unit:interaction():destroy()
     end

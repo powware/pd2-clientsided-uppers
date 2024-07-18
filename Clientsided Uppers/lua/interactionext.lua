@@ -118,7 +118,7 @@ function BaseInteractionExt:set_contour(color, opacity)
 end
 
 -- when interation with a clientsided FAK was interrupted
--- and this FAK has already been synced durin the interaction
+-- and this FAK has already been synced during the interaction
 -- set it empty
 function DoctorBagBaseInteractionExt:interact_interupt(player, complete)
     DoctorBagBaseInteractionExt.super.super.interact_interupt(self, player, complete)
