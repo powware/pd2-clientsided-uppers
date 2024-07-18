@@ -131,7 +131,6 @@ function ClientsidedUppers.RemoveFromUppers(fak)
 end
 
 -- removes the closest clientsided FAK from the list
--- if the fak is empty it's usage is synchronized
 function ClientsidedUppers.Remove(pos)
     local closest_dst = -1
     local closest_index = 0
