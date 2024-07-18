@@ -72,28 +72,21 @@ end
 
 -- combines the parts of the color from the settings
 function ClientsidedUppers.CreateContourColor()
-    ClientsidedUppers._contour_color =
-        Vector3(ClientsidedUppers.settings.red, ClientsidedUppers.settings.green, ClientsidedUppers.settings.blue)
+    ClientsidedUppers._contour_color = Vector3(ClientsidedUppers.settings.red, ClientsidedUppers.settings.green,
+        ClientsidedUppers.settings.blue)
 end
 
 -- notify that a clientsided FAK was taken
 function ClientsidedUppers.Notify()
-    managers.chat:_receive_message(
-        ChatManager.GAME,
-        "CLIENTSIDED UPPERS",
-        "FirstAidKit consumed.",
-        Color(1, 0.1, 1, 0.5)
-    )
+    managers.chat:_receive_message(ChatManager.GAME, "CLIENTSIDED UPPERS", "FirstAidKit consumed.",
+        Color(1, 0.1, 1, 0.5))
 end
 
 function ClientsidedUppers.UpdateButtons()
     for _, item in pairs(MenuHelper:GetMenu("clientsided_uppers")._items_list) do
-        if
-            item:name() == "clientsided_uppers_red" or item:name() == "clientsided_uppers_green" or
-                item:name() == "clientsided_uppers_blue" or
-                item:name() == "clientsided_uppers_opacity" or
-                item:name() == "clientsided_uppers_override_selected"
-         then
+        if item:name() == "clientsided_uppers_red" or item:name() == "clientsided_uppers_green" or item:name() ==
+            "clientsided_uppers_blue" or item:name() == "clientsided_uppers_opacity" or item:name() ==
+            "clientsided_uppers_override_selected" then
             item:set_enabled(ClientsidedUppers.settings.custom_contour)
         end
     end
@@ -119,13 +112,10 @@ end
 
 -- add clientsided FAK to a list of clientsided FAKs
 function ClientsidedUppers.Add(obj, pos)
-    table.insert(
-        ClientsidedUppers.List,
-        {
-            obj = obj,
-            pos = pos
-        }
-    )
+    table.insert(ClientsidedUppers.List, {
+        obj = obj,
+        pos = pos
+    })
 end
 
 function ClientsidedUppers.RemoveFromUppers(fak)
@@ -186,11 +176,10 @@ function ClientsidedUppers.SetupHooks()
 
                 local upgrade_lvl =
                     managers.player:has_category_upgrade("first_aid_kit", "damage_reduction_upgrade") and 1 or 0
-                local auto_recovery =
-                    managers.player:has_category_upgrade("first_aid_kit", "first_aid_kit_auto_recovery") and 1 or 0
-                local bits =
-                    Bitwise:lshift(auto_recovery, FirstAidKitBase.auto_recovery_shift) +
-                    Bitwise:lshift(upgrade_lvl, FirstAidKitBase.upgrade_lvl_shift)
+                local auto_recovery = managers.player:has_category_upgrade("first_aid_kit",
+                    "first_aid_kit_auto_recovery") and 1 or 0
+                local bits = Bitwise:lshift(auto_recovery, FirstAidKitBase.auto_recovery_shift) +
+                                 Bitwise:lshift(upgrade_lvl, FirstAidKitBase.upgrade_lvl_shift)
 
                 if Network:is_client() then
                     local min_distance = tweak_data.upgrades.values.first_aid_kit.first_aid_kit_auto_recovery[1]
@@ -223,11 +212,8 @@ function ClientsidedUppers.SetupHooks()
             if not self._clientsided and Network:is_client() then
                 self._validate_clbk_id = "first_aid_kit_validate" .. tostring(unit:key())
 
-                managers.enemy:add_delayed_clbk(
-                    self._validate_clbk_id,
-                    callback(self, self, "_clbk_validate"),
-                    Application:time() + 60
-                )
+                managers.enemy:add_delayed_clbk(self._validate_clbk_id, callback(self, self, "_clbk_validate"),
+                    Application:time() + 60)
             end
         end
 
@@ -413,24 +399,15 @@ function ClientsidedUppers.SetupHooks()
                     if u_data then
                         u_id = u_data.u_id
                     else
-                        debug_pause_unit(
-                            self._unit,
-                            "[BaseInteractionExt:set_active] could not sync interaction state.",
-                            self._unit
-                        )
+                        debug_pause_unit(self._unit,
+                            "[BaseInteractionExt:set_active] could not sync interaction state.", self._unit)
 
                         return
                     end
                 end
 
-                managers.network:session():send_to_peers_synched(
-                    "interaction_set_active",
-                    self._unit,
-                    u_id,
-                    active,
-                    self.tweak_data,
-                    self._unit:contour() and self._unit:contour():is_flashing() or false
-                )
+                managers.network:session():send_to_peers_synched("interaction_set_active", self._unit, u_id, active,
+                    self.tweak_data, self._unit:contour() and self._unit:contour():is_flashing() or false)
             end
         end
 
@@ -445,10 +422,8 @@ function ClientsidedUppers.SetupHooks()
             local contour_opacity = opacity
 
             if self._clientsided and ClientsidedUppers.settings.custom_contour then
-                if
-                    color == "standard_color" or
-                        (color == "selected_color" and ClientsidedUppers.settings.override_selected)
-                 then
+                if color == "standard_color" or
+                    (color == "selected_color" and ClientsidedUppers.settings.override_selected) then
                     contour_color = ClientsidedUppers._contour_color
                     contour_opacity = ClientsidedUppers.settings.opacity
                 end
@@ -478,88 +453,88 @@ function ClientsidedUppers.SetupHooks()
         end
     elseif RequiredScript == "lib/units/beings/player/playerdamage" then
         -- at playerdamage creation cooldown is fixed
-        Hooks:PostHook(
-            PlayerDamage,
-            "init",
-            "ClientsidedUppers_PlayerDamage:init",
-            function(object, unit)
-                if ClientsidedUppers.settings.cooldown_fix then
-                    object._uppers_elapsed = -PlayerDamage._UPPERS_COOLDOWN
-                end
+        Hooks:PostHook(PlayerDamage, "init", "ClientsidedUppers_PlayerDamage:init", function(object, unit)
+            if ClientsidedUppers.settings.cooldown_fix then
+                object._uppers_elapsed = -PlayerDamage._UPPERS_COOLDOWN
             end
-        )
+        end)
     elseif RequiredScript == "lib/managers/menumanager" then
-        Hooks:Add(
-            "LocalizationManagerPostInit",
-            "ClientsidedUppers_LocalizationManagerPostInit",
-            function(loc)
-                loc:load_localization_file(ClientsidedUppers._mod_path .. "loc/english.txt")
+        Hooks:Add("LocalizationManagerPostInit", "ClientsidedUppers_LocalizationManagerPostInit", function(loc)
+            loc:load_localization_file(ClientsidedUppers._mod_path .. "loc/english.txt")
+        end)
+
+        Hooks:Add("MenuManagerInitialize", "ClientsidedUppers_MenuManagerInitialize", function(menu_manager)
+            function MenuCallbackHandler:clientsided_uppers_cooldown_fix_callback(item)
+                ClientsidedUppers.settings.cooldown_fix = item:value() == "on"
             end
-        )
 
-        Hooks:Add(
-            "MenuManagerInitialize",
-            "ClientsidedUppers_MenuManagerInitialize",
-            function(menu_manager)
-                function MenuCallbackHandler:clientsided_uppers_cooldown_fix_callback(item)
-                    ClientsidedUppers.settings.cooldown_fix = item:value() == "on"
-                end
-
-                function MenuCallbackHandler:clientsided_uppers_notify_callback(item)
-                    ClientsidedUppers.settings.notify = item:value() == "on"
-                end
-
-                function MenuCallbackHandler:clientsided_uppers_custom_contour_callback(item)
-                    ClientsidedUppers.settings.custom_contour = item:value() == "on"
-
-                    ClientsidedUppers.UpdateButtons()
-                end
-
-                function MenuCallbackHandler:clientsided_uppers_red_callback(item)
-                    ClientsidedUppers.settings.red = math.round_with_precision(item:value(), 2)
-                end
-
-                function MenuCallbackHandler:clientsided_uppers_green_callback(item)
-                    ClientsidedUppers.settings.green = math.round_with_precision(item:value(), 2)
-                end
-
-                function MenuCallbackHandler:clientsided_uppers_blue_callback(item)
-                    ClientsidedUppers.settings.blue = math.round_with_precision(item:value(), 2)
-                end
-
-                function MenuCallbackHandler:clientsided_uppers_opacity_callback(item)
-                    ClientsidedUppers.settings.opacity = math.round_with_precision(item:value(), 2)
-                end
-
-                function MenuCallbackHandler:clientsided_uppers_override_selected_callback(item)
-                    ClientsidedUppers.settings.override_selected = item:value() == "on"
-                end
-
-                function MenuCallbackHandler:clientsided_uppers_back_callback(item)
-                    ClientsidedUppers.CreateContourColor()
-                    ClientsidedUppers:Save()
-                end
-
-                function MenuCallbackHandler:clientsided_uppers_default_callback(item)
-                    MenuHelper:ResetItemsToDefaultValue(item, {["clientsided_uppers_cooldown_fix"] = true}, true)
-                    MenuHelper:ResetItemsToDefaultValue(item, {["clientsided_uppers_notify"] = true}, false)
-                    MenuHelper:ResetItemsToDefaultValue(item, {["clientsided_uppers_custom_contour"] = true}, true)
-                    MenuHelper:ResetItemsToDefaultValue(item, {["clientsided_uppers_red"] = true}, 0.1)
-                    MenuHelper:ResetItemsToDefaultValue(item, {["clientsided_uppers_green"] = true}, 0.4)
-                    MenuHelper:ResetItemsToDefaultValue(item, {["clientsided_uppers_blue"] = true}, 1)
-                    MenuHelper:ResetItemsToDefaultValue(item, {["clientsided_uppers_opacity"] = true}, 1)
-                    MenuHelper:ResetItemsToDefaultValue(item, {["clientsided_uppers_override_selected"] = true}, true)
-
-                    ClientsidedUppers.UpdateButtons()
-                end
-
-                MenuHelper:LoadFromJsonFile(
-                    ClientsidedUppers._options_menu_file,
-                    ClientsidedUppers,
-                    ClientsidedUppers.settings
-                )
+            function MenuCallbackHandler:clientsided_uppers_notify_callback(item)
+                ClientsidedUppers.settings.notify = item:value() == "on"
             end
-        )
+
+            function MenuCallbackHandler:clientsided_uppers_custom_contour_callback(item)
+                ClientsidedUppers.settings.custom_contour = item:value() == "on"
+
+                ClientsidedUppers.UpdateButtons()
+            end
+
+            function MenuCallbackHandler:clientsided_uppers_red_callback(item)
+                ClientsidedUppers.settings.red = math.round_with_precision(item:value(), 2)
+            end
+
+            function MenuCallbackHandler:clientsided_uppers_green_callback(item)
+                ClientsidedUppers.settings.green = math.round_with_precision(item:value(), 2)
+            end
+
+            function MenuCallbackHandler:clientsided_uppers_blue_callback(item)
+                ClientsidedUppers.settings.blue = math.round_with_precision(item:value(), 2)
+            end
+
+            function MenuCallbackHandler:clientsided_uppers_opacity_callback(item)
+                ClientsidedUppers.settings.opacity = math.round_with_precision(item:value(), 2)
+            end
+
+            function MenuCallbackHandler:clientsided_uppers_override_selected_callback(item)
+                ClientsidedUppers.settings.override_selected = item:value() == "on"
+            end
+
+            function MenuCallbackHandler:clientsided_uppers_back_callback(item)
+                ClientsidedUppers.CreateContourColor()
+                ClientsidedUppers:Save()
+            end
+
+            function MenuCallbackHandler:clientsided_uppers_default_callback(item)
+                MenuHelper:ResetItemsToDefaultValue(item, {
+                    ["clientsided_uppers_cooldown_fix"] = true
+                }, true)
+                MenuHelper:ResetItemsToDefaultValue(item, {
+                    ["clientsided_uppers_notify"] = true
+                }, false)
+                MenuHelper:ResetItemsToDefaultValue(item, {
+                    ["clientsided_uppers_custom_contour"] = true
+                }, true)
+                MenuHelper:ResetItemsToDefaultValue(item, {
+                    ["clientsided_uppers_red"] = true
+                }, 0.1)
+                MenuHelper:ResetItemsToDefaultValue(item, {
+                    ["clientsided_uppers_green"] = true
+                }, 0.4)
+                MenuHelper:ResetItemsToDefaultValue(item, {
+                    ["clientsided_uppers_blue"] = true
+                }, 1)
+                MenuHelper:ResetItemsToDefaultValue(item, {
+                    ["clientsided_uppers_opacity"] = true
+                }, 1)
+                MenuHelper:ResetItemsToDefaultValue(item, {
+                    ["clientsided_uppers_override_selected"] = true
+                }, true)
+
+                ClientsidedUppers.UpdateButtons()
+            end
+
+            MenuHelper:LoadFromJsonFile(ClientsidedUppers._options_menu_file, ClientsidedUppers,
+                ClientsidedUppers.settings)
+        end)
     end
 end
 
