@@ -11,11 +11,15 @@
 		{
 			"identifier": "ClientsidedUppers",
 			"host": {
-				"meta": "https://github.com/powware/pd2-clientsided-uppers/releases/download/refs%2Fheads%2Fmaster/meta.json"
+				"meta": "https://github.com/powware/pd2-clientsided-uppers/releases/download/master/meta.json"
 			}
 		}
 	],
 	"hooks": [
+		{
+			"hook_id": "core/lib/system/coresystem",
+			"script_path": "main.lua"
+		},
 		{
 			"hook_id": "lib/units/beings/player/playerequipment",
 			"script_path": "lua/playerequipment.lua"
@@ -35,10 +39,6 @@
 		{
 			"hook_id": "lib/managers/menumanager",
 			"script_path": "lua/main.lua"
-		},
-		{
-			"hook_id": "core/lib/system/coresystem",
-			"script_path": "main.lua"
-		},
+		}
 	]
 }
